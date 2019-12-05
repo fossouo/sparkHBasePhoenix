@@ -23,6 +23,7 @@ import org.apache.phoenix.jdbc.PhoenixDriver;
 
 import com.google.common.collect.ImmutableMap;
 
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,14 +50,18 @@ public class readTable_phoenix23 {
         JavaSparkContext sc = new JavaSparkContext(conf);
         SQLContext sqlContext = new SQLContext(sc);
 
-        DataFrameReader readPhoenix = sqlContext.read().format("org.apache.phoenix.spark")
+        /* DataFrameReader dfphoenix = sqlContext
+                .read()
+                .format("phoenix")
                 .options(ImmutableMap.of("driver", "org.apache.phoenix.jdbc.PhoenixDriver", "zkUrl",
                         "jdbc:phoenix:dfossouo-2.dfossouo.root.hwx.site:2181:/hbase:hbase/dfossouo-1.dfossouo.root.hwx.site@ROOT.HWX.SITE:/tmp/hbase.keytab", "table", "WEB_STAT"))
-                ;
+                .load();
 
+        dfphoenix.createOrReplaceTempView("WEB_STAT");
 
-        readPhoenix.load();
-
+        dfphoenix = sqlContext.sql("SELECT * FROM TABLE1 WHERE COL1='test_row_1' AND ID=1L");
+        dfphoenix.show();
+*/
         System.out.println("End of JDBC Driver");
 
         /*
