@@ -1,12 +1,25 @@
 // import required classes and interfaces
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.spark.deploy.yarn.Client;
 import org.apache.spark.deploy.yarn.ClientArguments;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.spark.SparkConf;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 public class readTable_phoenix_yarn {
 
     public static void main(String[] arguments) throws Exception {
+
+        Logger.getLogger("org").setLevel(Level.DEBUG);
+
+        try {
+            UserGroupInformation.setConfiguration(new Configuration());
+            UserGroupInformation.loginUserFromKeytab("hbase/dfossouo-1.dfossouo.root.hwx.site@ROOT.HWX.SITE",
+                    "/tmp/hbase.keytab");
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
 
         // prepare arguments to be passed to
         // org.apache.spark.deploy.yarn.Client object
@@ -27,11 +40,13 @@ public class readTable_phoenix_yarn {
                 // name of your application's main class (required)
                 "--class",
                 "readTable_phoenix",
+                "--arg",
+                "spark.driver.extraJavaOptions=-Djava.security.auth.login.config=jaas.conf",
+                "--arg",
+                "spark.executor.extraJavaOptions=-Djava.security.auth.login.config=jaas.conf",
 
                 // comma separated list of local jars that want
                 // SparkContext.addJar to work with
-                "--addJars",
-                "/opt/cloudera/parcels/PHOENIX-4.14.1-cdh5.16.2.p0.1216424/lib/phoenix/lib/phoenix-spark-4.14.1-cdh5.16.2.jar:/opt/cloudera/parcels/PHOENIX-4.14.1-cdh5.16.2.p0.1216424/lib/phoenix/phoenix-4.14.1-cdh5.16.2-client.jar",
                 // argument 4 to your Spark program (SparkFriendRecommendation)
                 // this is a helper argument to create a proper JavaSparkContext object
                 // make sure that you create the following in SparkFriendRecommendation program
@@ -48,6 +63,20 @@ public class readTable_phoenix_yarn {
 
         // create an instance of SparkConf object
         SparkConf sparkConf = new SparkConf();
+
+        sparkConf.set("spark.yarn.historyServer.address",
+                "dfossouo-2.dfossouo.root.hwx.site:8032");
+
+        sparkConf.set("spark.hadoop.yarn.resourcemanager.hostname",
+                "dfossouo-2.dfossouo.root.hwx.site");
+
+        sparkConf.set("spark.hadoop.yarn.resourcemanager.address",
+                "dfossouo-2.dfossouo.root.hwx.site:8032");
+
+        sparkConf.set("spark.yarn.security.tokens.habse.enabled",
+                "true");
+
+        sparkConf.set("hadoop.root.logger","DEBUG");
 
         // create ClientArguments, which will be passed to Client
         ClientArguments cArgs = new ClientArguments(args, sparkConf);
